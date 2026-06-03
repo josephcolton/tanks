@@ -119,7 +119,7 @@ Attempting to `move` into a wall or any tank (alive or dead) is a crash. The tan
 **Crashing into a wall** — only the moving tank is affected:
 
 ```
-you crashed       ← movement blocked
+you crashed       ← movement blocked, 1 health deducted
 you got hit       ← 1 health deducted
 you died          ← only sent if health reaches 0
 ```
@@ -201,7 +201,7 @@ Scans return a string in row-major (reading) order using these symbols:
 | `you turned right` | Tank rotated clockwise. |
 | `you turned left` | Tank rotated counter-clockwise. |
 | `you moved` | Tank moved one tile. |
-| `you crashed` | Move destination was a wall or occupied tank; tank did not move. Always followed by `you got hit`. |
+| `you crashed` | Move destination was a wall or occupied tank; tank did not move. Followed by `you died` if health reaches 0. |
 | `you got hit` | Tank took 1 damage from crashing. Followed by `you died` if health reaches 0. |
 | `you shot` | Shot fired. |
 | `you got shot` | Your tank was hit by another player's shot. |
