@@ -6,9 +6,20 @@ A networked tank battle game for student AI agents. A central server displays th
 
 ## Requirements
 
+**Server and Python clients**
 - Python 3.9+
 - [pygame](https://www.pygame.org/) — `pip install pygame`
 - [windows-curses](https://pypi.org/project/windows-curses/) — `pip install windows-curses` *(Windows only, required for the interactive client)*
+
+**C++ client** (`tank_client_ai.cpp`)
+- g++ with C++17 support — `sudo apt install build-essential`
+
+**JavaScript client** (`tank_client_ai.js`)
+- Node.js 16+ — `sudo apt install nodejs`
+- No third-party packages; uses only built-in modules (`dgram`, `dns`, `readline`)
+
+**C# client** (`tank_client_ai.cs`)
+- .NET 6 SDK or later — `sudo apt install dotnet-sdk-8.0`
 
 ---
 
@@ -32,6 +43,61 @@ python tank_client_interactive.py Alice 127.0.0.1 1234
 ```
 
 The client displays a scrolling log of the dialog between client and server above an input prompt. Type commands at the `>` prompt. Type `help` for a local command list (it is not sent to the server). Press **ESC** or type `quit` to disconnect and exit.
+
+---
+
+## Example AI Clients
+
+Four example autonomous clients are provided. All implement the same "hunter" strategy — they scan their surroundings, shoot enemies directly ahead, turn toward nearby enemies, and move forward to explore. They are intended as starting points for students writing their own AI.
+
+### Python — `tank_client_ai.py` (simple) and `tank_client_advanced.py` (advanced)
+
+```
+python tank_client_ai.py NAME HOST [PORT]
+python tank_client_advanced.py NAME HOST [PORT]
+```
+
+The simple client uses only the 3×3 wide scan. The advanced client additionally uses the 5×5 extended scan and the far scan, builds an internal map of the battlefield, pathfinds with BFS, tracks the last known positions of enemies, and repairs health during safe moments.
+
+All four AI example clients accept a hostname or IP address for HOST and will prompt interactively for any missing arguments if run without command-line arguments.
+
+### C++ — `tank_client_ai.cpp`
+
+Build once with `make` (or `g++` directly), then run the compiled binary:
+
+```
+make
+./tank_client_ai NAME HOST [PORT]
+```
+
+Or compile manually:
+
+```
+g++ -std=c++17 -Wall -O2 -o tank_client_ai tank_client_ai.cpp
+./tank_client_ai NAME HOST [PORT]
+```
+
+Uses standard POSIX sockets — no external libraries required.
+
+### JavaScript — `tank_client_ai.js`
+
+```
+node tank_client_ai.js NAME HOST [PORT]
+```
+
+No installation step; uses only Node.js built-in modules.
+
+### C# — `tank_client_ai.cs`
+
+```
+dotnet run --project tank_client_ai.csproj -- NAME HOST [PORT]
+```
+
+All C# source code is in `tank_client_ai.cs`; `tank_client_ai.csproj` is a minimal 5-line build descriptor. To produce a standalone executable:
+
+```
+dotnet publish -c Release -r linux-x64 --self-contained
+```
 
 ---
 
@@ -244,9 +310,14 @@ Scans return a string in row-major (reading) order using these symbols:
 | File | Purpose |
 |---|---|
 | `tanks_server.py` | Server — pygame display, game state, UDP command handling |
-| `tank_client_interactive.py` | Interactive curses client for testing |
-| `tank_client_ai.py` | Example autonomous AI client (a starting point for students) |
-| `tank_client_advanced.py` | Advanced AI client — internal map, BFS pathfinding, enemy hunting, all three scans, and safe-time repairs |
+| `tank_client_interactive.py` | Interactive curses client for manual testing |
+| `tank_client_ai.py` | Simple autonomous AI client in Python (starting point for students) |
+| `tank_client_advanced.py` | Advanced AI client in Python — internal map, BFS pathfinding, enemy hunting, all three scans, and safe-time repairs |
+| `tank_client_ai.cpp` | Simple autonomous AI client in C++ (single-file, mirrors `tank_client_ai.py`) |
+| `Makefile` | Builds `tank_client_ai` from `tank_client_ai.cpp` using g++ |
+| `tank_client_ai.js` | Simple autonomous AI client in JavaScript for Node.js (single-file) |
+| `tank_client_ai.cs` | Simple autonomous AI client in C# for .NET 6+ (single-file) |
+| `tank_client_ai.csproj` | Minimal .NET project descriptor for building `tank_client_ai.cs` |
 | `tank_player.py` | `Player` class and `Direction` enum |
 | `communication.py` | Shared protocol constants and encode/decode helpers |
 | `configuration.py` | Reads `tanks.conf` |
