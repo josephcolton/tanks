@@ -331,42 +331,23 @@ def _run_ui(stdscr, client: _Client):
 # Entry point
 # ---------------------------------------------------------------------------
 
-def _usage():
-    print("Usage: python tank_client_interactive.py NAME HOST [PORT]")
-    print()
-    print("  NAME  your tank's display name (max 16 characters)")
-    print("  HOST  server hostname or IP address")
-    print("  PORT  server UDP port (default: 1234)")
-    print()
-    print("Commands available at the prompt:")
-    print("  info map          ask the server for the field dimensions")
-    print("  info players      ask who is connected (name list)")
-    print("  info facing       ask which direction you are facing")
-    print("  info coordinates  ask for your own tile position (x y)")
-    print("  whoami            ask the server for your own name")
-    print("  status            ask for your own health")
-    print("  status NAME       ask for another player's health")
-    print("  wait              do nothing this turn (accumulates toward repair)")
-    print("  turn right      rotate 90 degrees clockwise")
-    print("  turn left       rotate 90 degrees counter-clockwise")
-    print("  move            move one tile in the current facing direction")
-    print("  shoot           fire in the current facing direction")
-    print("  scan wide       3x3 area scan centred on your tank")
-    print("  scan far        scan up to 9 tiles in your facing direction")
-    print("  scan extended   5x5 area scan centred on your tank")
-    print("  help [topic]    command list, or detail for a command (e.g. help scan)")
-    print("  disconnect      tell the server you are leaving")
-    print("  quit            send disconnect and exit this client")
-
-
 def main():
-    if len(sys.argv) < 3:
-        _usage()
-        sys.exit(1)
+    if len(sys.argv) >= 3:
+        name = sys.argv[1]
+        host = sys.argv[2]
+        port = int(sys.argv[3]) if len(sys.argv) > 3 else 1234
+    else:
+        print("AI Tanks — interactive client")
+        name = input("Tank name: ").strip() or "Player"
+        host = input("Server hostname or IP [127.0.0.1]: ").strip() or "127.0.0.1"
+        port_str = input("Server port [1234]: ").strip()
+        port = int(port_str) if port_str else 1234
 
-    name = sys.argv[1]
-    host = sys.argv[2]
-    port = int(sys.argv[3]) if len(sys.argv) > 3 else 1234
+    try:
+        host = socket.gethostbyname(host)
+    except socket.gaierror as e:
+        print(f"Cannot resolve host '{host}': {e}")
+        sys.exit(1)
 
     client = _Client(name, host, port)
     client.start()

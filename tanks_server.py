@@ -582,6 +582,7 @@ def main():
                         server.start_game(sock)
                     elif server.game_state == GameState.RUNNING:
                         server.end_game(sock)
+                        running = False
 
         readable, _, _ = select.select([sock], [], [], 0)
         for s in readable:

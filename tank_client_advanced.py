@@ -329,6 +329,7 @@ class AdvancedTank:
         return found_enemy
 
     def scan_wide(self):
+        print("  -> scan wide")
         self._send(CMD_SCAN, ARG_WIDE)
         reply = self._request({RESP_WIDESCAN})
         time.sleep(ACTION_PAUSE)
@@ -336,6 +337,7 @@ class AdvancedTank:
             self._ingest_centered(reply[1][0], half=1)
 
     def scan_extended(self):
+        print("  -> scan extended")
         self._send(CMD_SCAN, ARG_EXTENDED)
         reply = self._request({RESP_EXTENDEDSCAN})
         time.sleep(ACTION_PAUSE)
@@ -344,6 +346,7 @@ class AdvancedTank:
 
     def scan_far(self):
         """Scan ahead; returns True if a live enemy is in our line of fire."""
+        print("  -> scan far")
         self._send(CMD_SCAN, ARG_FAR)
         reply = self._request({RESP_FARSCAN})
         time.sleep(ACTION_PAUSE)
@@ -543,6 +546,8 @@ class AdvancedTank:
     # ------------------------------------------------------------------
 
     def decide(self):
+        if not self.alive:
+            return
         self._prune_enemies()
 
         # 1. An enemy is straight ahead → confirm with a far scan, then fire.
@@ -584,6 +589,9 @@ class AdvancedTank:
         else:
             self.scan_wide()
 
+        if not self.alive:
+            return
+
         self.decide()
 
     # ------------------------------------------------------------------
@@ -607,7 +615,6 @@ class AdvancedTank:
                     self._request({RESP_GAME}, timeout=1.0)
                     continue
                 if not self.alive:
-                    print("Tank destroyed — standing by until the game ends.")
                     self._request({RESP_GAME}, timeout=1.0)
                     continue
                 self.take_turn()
@@ -618,22 +625,23 @@ class AdvancedTank:
             self._sock.close()
 
 
-def _usage():
-    print("Usage: python tank_client_advanced.py NAME HOST [PORT]")
-    print()
-    print("  NAME  your tank's display name (max 16 characters)")
-    print("  HOST  server hostname or IP address")
-    print("  PORT  server UDP port (default: 1234)")
-
-
 def main():
-    if len(sys.argv) < 3:
-        _usage()
-        sys.exit(1)
+    if len(sys.argv) >= 3:
+        name = sys.argv[1]
+        host = sys.argv[2]
+        port = int(sys.argv[3]) if len(sys.argv) > 3 else 1234
+    else:
+        print("AI Tanks — advanced AI client")
+        name = input("Tank name: ").strip() or "Tank"
+        host = input("Server hostname or IP [127.0.0.1]: ").strip() or "127.0.0.1"
+        port_str = input("Server port [1234]: ").strip()
+        port = int(port_str) if port_str else 1234
 
-    name = sys.argv[1]
-    host = sys.argv[2]
-    port = int(sys.argv[3]) if len(sys.argv) > 3 else 1234
+    try:
+        host = socket.gethostbyname(host)
+    except socket.gaierror as e:
+        print(f"Cannot resolve host '{host}': {e}")
+        sys.exit(1)
 
     AdvancedTank(name, host, port).run()
 

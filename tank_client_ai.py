@@ -146,6 +146,7 @@ class AITank:
 
     def scan_wide(self):
         """Scan the 3x3 area and return the 9-character result (or None)."""
+        print("  -> scan wide")
         self._send(CMD_SCAN, ARG_WIDE)
         reply = self._request({RESP_WIDESCAN})
         time.sleep(ACTION_PAUSE)          # scanning is on a cooldown too
@@ -234,6 +235,9 @@ class AITank:
 
         wide = self.scan_wide()
 
+        if not self.alive:
+            return
+
         # The tile directly in front of us, according to our facing.
         ahead = wide[self._cell(self.facing)] if (wide and self.facing) else None
 
@@ -275,7 +279,6 @@ class AITank:
                     self._request({RESP_GAME}, timeout=1.0)
                     continue
                 if not self.alive:
-                    print("Tank destroyed — standing by until the game ends.")
                     self._request({RESP_GAME}, timeout=1.0)
                     continue
                 self.take_turn()
@@ -286,22 +289,23 @@ class AITank:
             self._sock.close()
 
 
-def _usage():
-    print("Usage: python tank_client_ai.py NAME HOST [PORT]")
-    print()
-    print("  NAME  your tank's display name (max 16 characters)")
-    print("  HOST  server hostname or IP address")
-    print("  PORT  server UDP port (default: 1234)")
-
-
 def main():
-    if len(sys.argv) < 3:
-        _usage()
-        sys.exit(1)
+    if len(sys.argv) >= 3:
+        name = sys.argv[1]
+        host = sys.argv[2]
+        port = int(sys.argv[3]) if len(sys.argv) > 3 else 1234
+    else:
+        print("AI Tanks — simple AI client")
+        name = input("Tank name: ").strip() or "Tank"
+        host = input("Server hostname or IP [127.0.0.1]: ").strip() or "127.0.0.1"
+        port_str = input("Server port [1234]: ").strip()
+        port = int(port_str) if port_str else 1234
 
-    name = sys.argv[1]
-    host = sys.argv[2]
-    port = int(sys.argv[3]) if len(sys.argv) > 3 else 1234
+    try:
+        host = socket.gethostbyname(host)
+    except socket.gaierror as e:
+        print(f"Cannot resolve host '{host}': {e}")
+        sys.exit(1)
 
     AITank(name, host, port).run()
 
