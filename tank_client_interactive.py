@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 """
 Interactive AI Tanks client with a curses TUI.
 
@@ -28,6 +29,18 @@ Commands available at the prompt:
     help [topic]    command list, or detail for a command (e.g. help scan)
     disconnect      tell the server you are leaving
     quit            send disconnect and exit this client
+
+Scan replies are shown as a string of UPPERCASE tile symbols, read left-to-
+right, top-to-bottom (north-up regardless of which way you face):
+
+    S = your own tank (centre of a wide / extended scan)
+    . = empty tile
+    T = an alive (enemy) tank
+    D = a burned-out, dead tank — an obstacle
+    X = a wall / the edge of the field
+
+Commands you type are case-insensitive, but these scan symbols are not — they
+always come back uppercase.
 """
 
 import socket

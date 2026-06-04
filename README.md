@@ -55,7 +55,9 @@ The client displays a scrolling log of the dialog between client and server abov
 
 ## Protocol
 
-All messages are plain UTF-8 text with space-separated tokens. Commands are **case-insensitive**. Player names are stored in lowercase.
+All messages are plain UTF-8 text with space-separated tokens. **Commands and their arguments are case-insensitive** — `turn left`, `Turn LEFT`, and `TURN Left` are all accepted, as are `scan wide`, `INFO Map`, and so on. Player names are likewise matched case-insensitively and stored in lowercase (so `connect Alice` registers as `alice`).
+
+This case-insensitivity applies only to what you **send**. Data the server **sends back** keeps its case — in particular the tile symbols in a scan reply are always UPPERCASE (`S`, `T`, `D`, `X`); see [Scan formats](#scan-formats) below.
 
 ---
 
@@ -119,7 +121,7 @@ Attempting to `move` into a wall or any tank (alive or dead) is a crash. The tan
 **Crashing into a wall** — only the moving tank is affected:
 
 ```
-you crashed       ← movement blocked, 1 health deducted
+you crashed       ← movement blocked
 you got hit       ← 1 health deducted
 you died          ← only sent if health reaches 0
 ```
@@ -148,6 +150,8 @@ Scans return a string in row-major (reading) order using these symbols:
 | `T` | Alive tank |
 | `D` | Burned-out (dead) tank — blocks movement, shots and scan rays pass through |
 | `X` | Wall / out of bounds |
+
+> **The scan symbols are UPPERCASE and case-sensitive.** Although *commands* you send are case-insensitive, the symbols in a scan reply are always uppercase (`S`, `T`, `D`, `X`) — compare against them exactly. Note that the empty-tile symbol is a literal `.` (period). When writing your own client, do not lowercase a scan result before reading it, or tanks (`T`) and walls (`X`) will become unrecognisable.
 
 **`scan wide`** returns a **9-character** 3×3 grid centred on your tank (north up, regardless of facing):
 
@@ -201,7 +205,7 @@ Scans return a string in row-major (reading) order using these symbols:
 | `you turned right` | Tank rotated clockwise. |
 | `you turned left` | Tank rotated counter-clockwise. |
 | `you moved` | Tank moved one tile. |
-| `you crashed` | Move destination was a wall or occupied tank; tank did not move. Followed by `you died` if health reaches 0. |
+| `you crashed` | Move destination was a wall or occupied tank; tank did not move. Always followed by `you got hit`. |
 | `you got hit` | Tank took 1 damage from crashing. Followed by `you died` if health reaches 0. |
 | `you shot` | Shot fired. |
 | `you got shot` | Your tank was hit by another player's shot. |
@@ -242,6 +246,7 @@ Scans return a string in row-major (reading) order using these symbols:
 | `tanks_server.py` | Server — pygame display, game state, UDP command handling |
 | `tank_client_interactive.py` | Interactive curses client for testing |
 | `tank_client_ai.py` | Example autonomous AI client (a starting point for students) |
+| `tank_client_advanced.py` | Advanced AI client — internal map, BFS pathfinding, enemy hunting, all three scans, and safe-time repairs |
 | `tank_player.py` | `Player` class and `Direction` enum |
 | `communication.py` | Shared protocol constants and encode/decode helpers |
 | `configuration.py` | Reads `tanks.conf` |

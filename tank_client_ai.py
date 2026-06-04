@@ -1,9 +1,23 @@
+#!/usr/bin/python3
 """
 Example autonomous AI Tanks client — a simple "hunter" bot.
 
 This is a starting point for students: it plays a complete game but keeps its
 logic deliberately small so you can extend it. It uses only the WIDE scan
 (the 3x3 area around the tank) — no far scan and no extended scan.
+
+A wide scan comes back as a 9-character string read left-to-right, top-to-
+bottom, using these UPPERCASE symbols (matched against the SCAN_* constants in
+communication.py):
+
+    S = your own tank (always the centre, index 4)
+    . = empty tile
+    T = an alive (enemy) tank
+    D = a burned-out, dead tank — an obstacle
+    X = a wall / the edge of the field
+
+The symbols are case-sensitive, so we read the scan result as-is — never
+lowercase it, or `T` and `X` would stop matching SCAN_TANK and SCAN_WALL.
 
 To avoid driving into walls, the bot remembers which way it is facing, so it
 knows which of the scanned tiles is directly in front of it. It learns its

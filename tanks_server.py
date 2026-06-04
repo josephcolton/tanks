@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import enum
 import select
 import socket
@@ -337,7 +339,7 @@ class TanksServer:
             self._send(sock, addr, RESP_ERROR, "server full")
             return
 
-        name = args[0][:16]
+        name = args[0][:16].lower()    # player names are stored lowercase
         x, y, direction = _starting_positions(
             self.config.field_width, self.config.field_height)[slot]
 
@@ -360,15 +362,16 @@ class TanksServer:
         if not args:
             self._send(sock, addr, RESP_ERROR, usage)
             return
-        if args[0] == ARG_MAP:
+        arg = args[0].lower()
+        if arg == ARG_MAP:
             self._send(sock, addr, RESP_MAP,
                        self.config.field_width, self.config.field_height)
-        elif args[0] == ARG_PLAYERS:
+        elif arg == ARG_PLAYERS:
             names = ",".join(p.name for p in self.slots if p is not None)
             self._send(sock, addr, RESP_PLAYERS, names if names else "(none)")
-        elif args[0] == ARG_FACING:
+        elif arg == ARG_FACING:
             self._send(sock, addr, RESP_FACING, str(player.direction))
-        elif args[0] == ARG_COORDINATES:
+        elif arg == ARG_COORDINATES:
             self._send(sock, addr, RESP_COORDINATES, player.x, player.y)
         else:
             self._send(sock, addr, RESP_ERROR, usage)
@@ -378,7 +381,7 @@ class TanksServer:
 
     def _handle_status(self, sock, addr, player, args):
         if args:
-            target_name = args[0]
+            target_name = args[0].lower()    # names are stored lowercase
             target = next((p for p in self.players.values()
                            if p.name == target_name), None)
             if target is None:
@@ -400,11 +403,11 @@ class TanksServer:
         if not args:
             self._send(sock, addr, RESP_ERROR, "usage: turn right|left")
             return
-        if args[0] == ARG_RIGHT:
+        if args[0].lower() == ARG_RIGHT:
             player.set_cooldown(self.config.move_cooldown)
             player.turn_right()
             self._send(sock, addr, RESP_YOU, YOU_TURNED_RIGHT)
-        elif args[0] == ARG_LEFT:
+        elif args[0].lower() == ARG_LEFT:
             player.set_cooldown(self.config.move_cooldown)
             player.turn_left()
             self._send(sock, addr, RESP_YOU, YOU_TURNED_LEFT)
@@ -478,13 +481,13 @@ class TanksServer:
         if not args:
             self._send(sock, addr, RESP_ERROR, "usage: scan wide|far|extended")
             return
-        if args[0] == ARG_WIDE:
+        if args[0].lower() == ARG_WIDE:
             player.set_cooldown(self.config.scan_cooldown)
             self._send(sock, addr, RESP_WIDESCAN, self._scan_wide(player))
-        elif args[0] == ARG_FAR:
+        elif args[0].lower() == ARG_FAR:
             player.set_cooldown(self.config.scan_cooldown)
             self._send(sock, addr, RESP_FARSCAN, self._scan_far(player))
-        elif args[0] == ARG_EXTENDED:
+        elif args[0].lower() == ARG_EXTENDED:
             player.set_cooldown(self.config.extended_cooldown)
             self._send(sock, addr, RESP_EXTENDEDSCAN, self._scan_extended(player))
         else:

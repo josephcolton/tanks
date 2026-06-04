@@ -76,6 +76,13 @@ def build_message(*parts) -> bytes:
 def parse_message(data: bytes) -> tuple:
     """
     Decode a raw packet into (command, args).
+
+    The command (the first token) is lowercased so command matching is
+    case-insensitive. The args are returned in their ORIGINAL case: scan
+    results carry meaningful uppercase symbols (T, X, D, S), so lowercasing
+    them would make tanks and walls unrecognisable. Anything that needs a
+    case-insensitive arg (a direction, a player name) lowercases it itself.
+
     Returns ("", []) for empty/undecodable data.
     """
     try:
@@ -85,7 +92,7 @@ def parse_message(data: bytes) -> tuple:
     parts = text.split()
     if not parts:
         return "", []
-    return parts[0].lower(), [p.lower() for p in parts[1:]]
+    return parts[0].lower(), parts[1:]
 
 
 def args_str(args: list) -> str:
